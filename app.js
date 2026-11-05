@@ -1,16 +1,22 @@
 // Datos de las propiedades del asesor Harold Ríos
 const propertiesData = {
+    "125000_USD_120_Casa Comercial 120m²": {
+        price: 125000,
+        currency: "USD",
+        area: 120,
+        name: "Casa Comercial 120m² en Pachacútec"
+    },
     "150000_PEN_160_Terreno Residencial 160m²": {
         price: 150000,
         currency: "S/",
         area: 160,
         name: "Terreno Residencial 160m² cerca al Parque Bicentenario"
     },
-    "2720511_USD_18136.74_Terreno Industrial 18,136m²": {
-        price: 2720511,
+    "2720400_USD_18136_Terreno Industrial 18,136m²": {
+        price: 2720400,
         currency: "USD",
-        area: 18136.74,
-        name: "Terreno Industrial 18,136.74m² (ZRE)"
+        area: 18136,
+        name: "Terreno Industrial 18,136m² (ZRE)"
     }
 };
 
@@ -231,7 +237,108 @@ leadForm.addEventListener("submit", (e) => {
     window.open(url, "_blank");
 });
 
-// Inicializar la calculadora con el terreno residencial seleccionado por defecto al cargar
+// Inicializar la calculadora y las galerías al cargar
 window.addEventListener("DOMContentLoaded", () => {
     updateCalculations();
+    initGallery({
+        prefix: "casa",
+        items: Array.from({ length: 21 }, (_, i) => ({ type: "img", src: `assets/casa-comercial/casa-${i + 1}.jpg` }))
+    });
+    initGallery({
+        prefix: "ind",
+        items: [
+            ...Array.from({ length: 7 }, (_, i) => ({ type: "img", src: `assets/terreno-industrial/industrial-${i + 1}.jpg` })),
+            ...Array.from({ length: 4 }, (_, i) => ({ type: "video", src: `assets/terreno-industrial/video-${i + 1}.mp4`, poster: "assets/terreno-industrial/industrial-1.jpg" }))
+        ]
+    });
 });
+
+// ----------------------------------------------------
+// 5. Galerías + Lightbox compartido (fotos y videos)
+// ----------------------------------------------------
+const lightboxState = { items: [], index: 0, onChange: null };
+
+function renderLightbox() {
+    const lb = document.getElementById("casaLightbox");
+    const stage = document.getElementById("lbStage");
+    const item = lightboxState.items[lightboxState.index];
+    stage.innerHTML = item.type === "video"
+        ? `<video src="${item.src}" controls autoplay playsinline></video>`
+        : `<img src="${item.src}" alt="Foto ${lightboxState.index + 1} de la propiedad">`;
+    document.getElementById("lbCounter").textContent = `${lightboxState.index + 1} / ${lightboxState.items.length}`;
+    lb.hidden = false;
+}
+
+function lightboxGo(delta) {
+    const n = lightboxState.items.length;
+    lightboxState.index = (lightboxState.index + delta + n) % n;
+    if (lightboxState.onChange) lightboxState.onChange(lightboxState.index);
+    renderLightbox();
+}
+
+function closeLightbox() {
+    document.getElementById("casaLightbox").hidden = true;
+    document.getElementById("lbStage").innerHTML = "";
+    document.body.style.overflow = "";
+}
+
+(function setupLightboxControls() {
+    const lb = document.getElementById("casaLightbox");
+    if (!lb) return;
+    document.getElementById("lbClose").addEventListener("click", closeLightbox);
+    document.getElementById("lbPrev").addEventListener("click", () => lightboxGo(-1));
+    document.getElementById("lbNext").addEventListener("click", () => lightboxGo(1));
+    lb.addEventListener("click", (e) => { if (e.target === lb || e.target.id === "lbStage") closeLightbox(); });
+    document.addEventListener("keydown", (e) => {
+        if (lb.hidden) return;
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowLeft") lightboxGo(-1);
+        if (e.key === "ArrowRight") lightboxGo(1);
+    });
+    let startX = 0;
+    lb.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener("touchend", (e) => {
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 50) lightboxGo(dx < 0 ? 1 : -1);
+    });
+})();
+
+function initGallery({ prefix, items }) {
+    const mainImg = document.getElementById(`${prefix}MainImg`);
+    const thumbs = document.getElementById(`${prefix}Thumbs`);
+    const openBtn = document.getElementById(`${prefix}OpenLightbox`);
+    if (!mainImg || !thumbs) return;
+    let current = 0;
+
+    items.forEach((item, i) => {
+        const btn = document.createElement("button");
+        btn.className = "thumb" + (i === 0 ? " active" : "") + (item.type === "video" ? " thumb-video" : "");
+        btn.setAttribute("aria-label", item.type === "video" ? `Ver video ${i + 1}` : `Ver foto ${i + 1}`);
+        btn.innerHTML = item.type === "video"
+            ? `<video src="${item.src}#t=1" preload="metadata" muted playsinline></video><span class="play-icon"><i class="fa-solid fa-play"></i></span>`
+            : `<img src="${item.src}" alt="" loading="lazy">`;
+        btn.addEventListener("click", () => {
+            if (item.type === "video") { setActive(i); open(i); } else { setActive(i); }
+        });
+        thumbs.appendChild(btn);
+    });
+
+    function setActive(i) {
+        current = i;
+        if (items[i].type === "img") mainImg.src = items[i].src;
+        thumbs.querySelectorAll(".thumb").forEach((t, idx) => t.classList.toggle("active", idx === i));
+        const el = thumbs.children[i];
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+
+    function open(i) {
+        lightboxState.items = items;
+        lightboxState.index = i;
+        lightboxState.onChange = setActive;
+        document.body.style.overflow = "hidden";
+        renderLightbox();
+    }
+
+    mainImg.addEventListener("click", () => open(current));
+    if (openBtn) openBtn.addEventListener("click", () => open(current));
+}
