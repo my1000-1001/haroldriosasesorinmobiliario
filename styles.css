@@ -10,6 +10,7 @@
     --dark-bg: #0F172A;
     --dark-card: #1E293B;
     --text-dark: #1E293B;
+    --btn-light: #F8FAFC;
     --text-light: #F8FAFC;
     --text-muted-light: #64748B;
     --text-muted-dark: #94A3B8;
@@ -25,6 +26,7 @@
     --bg-color: var(--light-bg);
     --card-bg: var(--light-card);
     --text-color: var(--text-dark);
+    --btn-color: var(--btn-light);
     --text-muted: var(--text-muted-light);
     --border-color: rgba(0, 0, 0, 0.08);
     --navbar-bg: var(--navy-blue);
@@ -196,7 +198,7 @@ p {
 .logo-principal {
     font-size: 0.95rem;
     font-weight: 600;
-    color: #FFFFFF;
+    color: var(--btn-color);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -237,7 +239,7 @@ p {
 
 .nav-link {
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--btn-color);
     font-weight: 500;
     font-size: 0.95rem;
     transition: var(--transition);
@@ -273,7 +275,7 @@ p {
 .theme-btn {
     background: transparent;
     border: 1px solid var(--border-color);
-    color: var(--text-color);
+    color: var(--btn-color);
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -311,7 +313,7 @@ p {
     display: none;
     background: transparent;
     border: none;
-    color: var(--text-color);
+    color: var(--btn-color);
     font-size: 1.5rem;
     cursor: pointer;
 }
@@ -1515,7 +1517,7 @@ p {
         top: 70px;
         left: 0;
         width: 100%;
-        background-color: var(--card-bg);
+        background-color: #1E293B;
         border-bottom: 1px solid var(--border-color);
         flex-direction: column;
         padding: 24px;
